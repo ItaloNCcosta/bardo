@@ -1,11 +1,14 @@
 FROM php:7.4-apache
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get update
+RUN apt-get install -ym wget g++ curl git gnupg2 apt-utils software-properties-common libpng-dev
 
-RUN docker-php-ext-install pdo_mysql
-RUN docker-php-ext-install json
-RUN docker-php-ext-install mysql
+RUN docker-php-source extract \
+    && docker-php-ext-install gd mysqli pdo_mysql \
+    && docker-php-source delete
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN alias composer="php -n /usr/local/bin/composer"
 
 WORKDIR /var/www/html
 
