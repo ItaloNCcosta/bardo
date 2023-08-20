@@ -1,0 +1,56 @@
+version: '3.1'
+
+networks:
+  bardo-public:
+    driver: bridge
+  bardo-private:
+    driver: bridge
+  bardo-db:
+    driver: bridge
+
+services:
+  bardo:
+    build: ./docker/php
+    image: bardo
+    volumes:
+      - './public:/var/www/html'
+      - './docker/php/php.ini:/usr/local/etc/php/php.ini'
+      - './docker/php/apache2/charset.conf:/etc/apache2/conf.d/charset.conf'
+      - './docker/php/apache2/mime.types:/etc/apache2/conf.d/mime.types'
+    networks:
+      - bardo-public
+      - bardo-private
+      - bardo-db
+    ports:
+      - 80:80
+      - 443:443
+
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    env_file:
+      - ".env"
+    environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+        MYSQL_USER: ${MYSQL_USER}
+        MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - './docker/mysql:/docker-entrypoint-initdb.d'
+      - './docker/mysql/my.conf:/etc/mysql/my.cnf'
+    networks:
+      - bardo-db
+    restart: always
+
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   links:
+  #   - mysql
+  #   environment:
+  #     PMA_HOST: mysql 
+  #     PMA_PORT: 3306
+  #   networks:
+  #     - bardo-db
+  #   ports:
+  #   - 8000:80

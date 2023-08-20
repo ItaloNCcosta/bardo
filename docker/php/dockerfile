@@ -1,0 +1,21 @@
+FROM php:7.4-apache
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+RUN docker-php-ext-install pdo_mysql
+RUN docker-php-ext-install json
+RUN docker-php-ext-install mysql
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+WORKDIR /var/www/html
+
+COPY sistema.conf /etc/apache2/sites-available/sistema.conf
+
+RUN a2enmod rewrite
+RUN a2ensite sistema.conf
+RUN a2dissite 000-default
+RUN service apache2 restart
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]
